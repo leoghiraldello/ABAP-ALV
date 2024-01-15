@@ -1,0 +1,162 @@
+REPORT Z_PURCHASINGALV2_011524.
+
+* Types
+types: BEGIN OF ty_ekko,
+       ebeln type ekko-ebeln,
+       bukrs type ekko-bukrs,
+       bsart type ekko-bsart,
+       statu type ekko-statu,
+       aedat type ekko-aedat,
+       ernam type ekko-ernam,
+       txz01 type ekpo-txz01,
+       matnr type ekpo-matnr,
+       menge type ekpo-menge,
+       meins type ekpo-meins,
+       END OF ty_ekko.
+
+* Internal tables
+data: ti_ekko type table of ty_ekko,
+      ti_fieldcat type slis_t_fieldcat_alv.
+
+* Workarea
+data wa_fieldcat type slis_fieldcat_alv.
+
+* Tables
+tables ekko.
+
+* Select screen
+select-options s_ebeln for ekko-ebeln.
+
+START-OF-SELECTION.
+
+* Performs
+perform f_select_data.
+perform f_fillout_fieldcat.
+perform f_show_data.
+
+*&---------------------------------------------------------------------*
+*&      Form  F_SELECT_DATA
+*&---------------------------------------------------------------------*
+FORM F_SELECT_DATA .
+
+  select k~ebeln
+         k~bukrs
+         k~bsart
+         k~statu
+         k~aedat
+         k~ernam
+         p~txz01
+         p~matnr
+         p~menge
+         p~meins
+         from ekko as k
+         INNER JOIN ekpo as p
+         on k~ebeln = p~ebeln
+         into table ti_ekko
+         where k~ebeln in s_ebeln.
+
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  F_FILLOUT_FIELDCAT
+*&---------------------------------------------------------------------*
+FORM F_FILLOUT_FIELDCAT.
+
+  wa_fieldcat-col_pos = 1.
+  wa_fieldcat-fieldname = 'EBELN'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 10.
+  wa_fieldcat-seltext_l = 'Document N.'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 2.
+  wa_fieldcat-fieldname = 'BUKRS'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 4.
+  wa_fieldcat-seltext_l = 'Company'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 3.
+  wa_fieldcat-fieldname = 'BSART'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 4.
+  wa_fieldcat-seltext_l = 'Document Type'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 4.
+  wa_fieldcat-fieldname = 'STATU'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 1.
+  wa_fieldcat-seltext_l = 'Document Status'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 5.
+  wa_fieldcat-fieldname = 'AEDAT'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 8.
+  wa_fieldcat-seltext_l = 'Input Date'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 6.
+  wa_fieldcat-fieldname = 'ERNAM'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 12.
+  wa_fieldcat-seltext_l = 'Staff name'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 7.
+  wa_fieldcat-fieldname = 'TXZ01'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 40.
+  wa_fieldcat-seltext_l = 'Brief text'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 8.
+  wa_fieldcat-fieldname = 'MATNR'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 18.
+  wa_fieldcat-seltext_l = 'Material N.'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 9.
+  wa_fieldcat-fieldname = 'MENGE'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 13.
+  wa_fieldcat-seltext_l = 'Quantity'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+  wa_fieldcat-col_pos = 10.
+  wa_fieldcat-fieldname = 'MEINS'.
+  wa_fieldcat-tabname = 'TI_EKKO'.
+  wa_fieldcat-outputlen = 3.
+  wa_fieldcat-seltext_l = 'Unit'.
+  append wa_fieldcat to ti_fieldcat.
+  clear wa_fieldcat.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  F_SHOW_DATA
+*&---------------------------------------------------------------------*
+FORM F_SHOW_DATA .
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+   EXPORTING
+     IT_FIELDCAT                       = ti_fieldcat
+   TABLES
+      T_OUTTAB                          = ti_ekko
+   EXCEPTIONS
+     PROGRAM_ERROR                     = 1
+     OTHERS                            = 2.
+
+ENDFORM.

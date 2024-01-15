@@ -1,0 +1,99 @@
+REPORT Z_PURCHASINGALV_011524.
+
+* Types
+types: BEGIN OF ty_ekko,
+       ebeln type ekko-ebeln,
+       bukrs type ekko-bukrs,
+       bsart type ekko-bsart,
+       statu type ekko-statu,
+       aedat type ekko-aedat,
+       ernam type ekko-ernam,
+       txz01 type ekpo-txz01,
+       matnr type ekpo-matnr,
+       menge type ekpo-menge,
+       meins type ekpo-meins,
+       END OF ty_ekko.
+
+* Internal tables
+data: ti_ekko type table of ty_ekko,
+      ti_fieldcat type slis_t_fieldcat_alv.
+
+* Workarea
+data wa_fieldcat type slis_fieldcat_alv.
+
+* Tables
+tables ekko.
+
+* Select screen
+select-options s_ebeln for ekko-ebeln.
+
+START-OF-SELECTION.
+
+* Performs
+perform f_select_data.
+perform f_fillout_fieldcat using: 1 'EBELN' 'TI_EKKO' 10 'Purc.Doc',
+                                  2 'BUKRS' 'TI_EKKO' 4 'Company',
+                                  3 'BSART' 'TI_EKKO' 4 'Doc.Type',
+                                  4 'statu' 'TI_EKKO' 1 'Doc.Status',
+                                  5 'AEDAT' 'TI_EKKO' 8 'Input Date',
+                                  6 'ERNAM' 'TI_EKKO' 12 'Input Staff',
+                                  7 'TXZ01' 'TI_EKKO' 40 'Brief text',
+                                  8 'MATNR' 'TI_EKKO' 18 'Material N.',
+                                  9 'MENGE' 'TI_EKKO' 13 'Quantity',
+                                  10 'meins' 'TI_EKKO' 3 'Unit'.
+
+perform f_show_data.
+
+*&---------------------------------------------------------------------*
+*&      Form  F_SELECT_DATA
+*&---------------------------------------------------------------------*
+FORM F_SELECT_DATA .
+
+  select k~ebeln
+         k~bukrs
+         k~bsart
+         k~statu
+         k~aedat
+         k~ernam
+         p~txz01
+         p~matnr
+         p~menge
+         p~meins
+         from ekko as k
+         INNER JOIN ekpo as p
+         on k~ebeln = p~ebeln
+         into table ti_ekko
+         where k~ebeln in s_ebeln.
+
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  F_FILLOUT_FIELDCAT
+*&---------------------------------------------------------------------*
+FORM F_FILLOUT_FIELDCAT  USING P1 P2 P3 P4 P5.
+
+  wa_fieldcat-col_pos = P1.
+  wa_fieldcat-fieldname = P2.
+  wa_fieldcat-tabname = P3.
+  wa_fieldcat-outputlen = P4.
+  wa_fieldcat-seltext_l = P5.
+  APPEND wa_fieldcat to ti_fieldcat.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  F_SHOW_DATA
+*&---------------------------------------------------------------------*
+FORM F_SHOW_DATA .
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+   EXPORTING
+     IT_FIELDCAT                       = ti_fieldcat
+   TABLES
+      T_OUTTAB                          = ti_ekko
+   EXCEPTIONS
+     PROGRAM_ERROR                     = 1
+     OTHERS                            = 2.
+
+ENDFORM.
